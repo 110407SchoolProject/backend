@@ -13,106 +13,55 @@ import jwt
 from django.conf import settings
 from django.views import View
 import datetime
-from diary.models import *
+from moodspider.models import Moodtalk as moodtalk_models
+from diary.models import Diary as diray_models
 from diary.decorators import token_auth_required, permission_required, admin_only
-from diary import models as diary_models
+#from diary import models as diary_models
 from django.db import transaction
+import random
 
 
 logging = logging.getLogger(__name__)
 
 
 @method_decorator(csrf_exempt,name="dispatch")
-class Diary(View):
-    # 新增 diary
-    @method_decorator(token_auth_required)
-    def post(self,request, *args, **kwargs):
+class MoodSentence(View):
+    # get 隨機取得心情小語
+    def get(self, request, *args, **kwargs):
         try:
-            user = kwargs["user"]
-            req = json.loads(request.body)
-            title = req["title"]
-            content = req["content"]
-            tag = req["tag"]
-            moodscore = req["moodscore"]
-            diary = diary_models.Diary(userid = user,title = title, content = content, tag = tag, moodscore = moodscore)
-            diary.save()
-            res = {
-                "result":"ok"
-            }
-            return JsonResponse(res,status=200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error",str(e))
-            return JsonResponse({"message":"failed","error":str(e)}, status=500)
-    
-    # 刪除 diary
-    @method_decorator(token_auth_required)
-    def delete(self, request, *args, **kwargs):
-        try:
-            diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"], userid = kwargs["user"])
-            diary.delete()
-            res = {
-                "result":"ok"
-            }
-            return JsonResponse(res,status=200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error", str(e))
-            return JsonResponse({"message": "failed", "error": str(e)}, status=500)  
-
-    # 更新diary
-    @method_decorator(token_auth_required)
-    def put(self,request,*args,**kwargs):
-        try:
-            # diaryid = kwargs["diaryid"]
-            # print(kwargs)
-            # user = kwargs["user"]
-            # print(user)
-            diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"], userid = kwargs["user"])
-            # print(diary.moodscore)
-            with transaction.atomic():
-                req = json.loads(request.body)
-                diary.title = req["title"]
-                diary.content = req["content"]
-                diary.tag  = req["tag"]
-                diary.moodscore = req["moodscore"]
-                diary.save()
-            # diary = diary_models.Diary( title = title, content= content, tag = tag, moodscore = moodscore)
-            # diary.save()
-            res = {
-                "result": "ok"
-            }
-
-            return JsonResponse(res, status = 200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error",str(e))
-            return JsonResponse({"message":"failed","error":str(e)}, status=500)
-
-
-    # 取得日記 (單一或全部)
-    @method_decorator(token_auth_required)
-    
-    def get(self,request, *args, **kwargs):
-        try:
-            #user = kwargs["user"]
-            # print(kwargs)
-            diary_list = []
-            if kwargs["diaryid"] == "":
-                diarys = diary_models.Diary.objects.filter(userid=kwargs["user"]).all()
-                for diary in diarys:
-                    diary_list.append(diary.all_to_json())
-                # 取list
-            else:
-                diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"],userid = kwargs["user"])
-                diary_list.append(diary.single_to_json())
-
+            sentences_list = []
+            sentences = moodtalk_models.objects.all()
+            for sentence in sentences:
+                sentences_list.append(sentence.to_json())
+            num = random.randrange(0,100)
             res = {
                 "result": "ok",
-                "diary_list": diary_list
+                "sentence": sentences_list[num]
             }
-            return JsonResponse(res, status = 200)
+            return JsonResponse(res, status=200)
         except Exception as e:
             traceback.print_exc()
             print("error",str(e))
             return JsonResponse({"message": "failed","error": str(e)}, status = 500 )
+    
+
+@method_decorator(csrf_exempt,name="dispatch")
+class LatestDiary(View):
+    @method_decorator(token_auth_required)
+    def post(self, request, *args, **kwargs):
+        try:
+            lastdiary_list = []
+            diarys = diray_models.objects.filter(userid = kwargs["user"]).order_by('-create_date')[:2]
+            #lastdiary = diarys.order_by('create_date')[len(diarys)-3:len(diarys)-1]
+            #print(len(lastdiary))
+            for diary in diarys:
+                lastdiary_list.append(diary.all_to_json())
+            res = {
+                "result": "ok",
+                "lastdiary": lastdiary_list
+            }
+            return JsonResponse(res, status=200)
+        except Exception as e:
+            traceback.print_exc()
+            print("error",str(e))
+            return JsonResponse({"message": "failed","error": str(e)}, status = 500)

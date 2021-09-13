@@ -9,7 +9,9 @@ class Diary(models.Model):
     userid = models.ForeignKey(commonauth_models.CommonUser, on_delete=models.CASCADE,null=True,verbose_name="使用者ID")
     title = models.CharField(max_length=128, verbose_name="日記標題")
     content = models.CharField(max_length=1024, verbose_name="日記內容")
-    tag = models.CharField(max_length=50,verbose_name="標籤")
+    tag = models.CharField(max_length=50,default=None, blank=True, null=True,verbose_name="標籤")
+    tag2 = models.CharField(max_length=50,default=None, blank=True, null=True,verbose_name="標籤2")
+    tag3 = models.CharField(max_length=50,default=None, blank=True, null=True,verbose_name="標籤3")
     moodscore = models.IntegerField(verbose_name="心情分數")
 
     create_date = models.DateField(auto_now_add=True)
@@ -29,7 +31,10 @@ class Diary(models.Model):
         "title": self.title,
         "content": self.content,
         "tag": self.tag,
-        "moodscore": self.moodscore
+        "tag2": self.tag2,
+        "tag3": self.tag3,
+        "moodscore": self.moodscore,
+        "create_date": self.create_date
         }
         return data
     
@@ -39,7 +44,10 @@ class Diary(models.Model):
         "title": self.title,
         "content": self.content,
         "tag": self.tag,
-        "moodscore": self.moodscore
+        "tag2": self.tag2,
+        "tag3": self.tag3,
+        "moodscore": self.moodscore,
+        "create_date": self.create_date
         }
         return data
     

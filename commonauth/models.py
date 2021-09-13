@@ -8,6 +8,7 @@ class CommonUser(models.Model):
   userid = models.UUIDField(default=uuid.uuid4, unique=True,primary_key=True, editable=False,verbose_name="使用者ID")
   username = models.EmailField(max_length=128,unique=True,verbose_name="帳號(信箱)")
   truename = models.CharField(max_length=100, default=None, blank=True, null=True, verbose_name="姓名")
+  nickname = models.CharField(max_length=128, default=None, blank=True,null=True, verbose_name="暱稱")
   password = models.CharField(max_length=128, verbose_name="密碼")
   birthday = models.DateField(max_length=128, default=None, blank=True, null=True, verbose_name="生日")
   gender = models.CharField(max_length=5, verbose_name="性別")
@@ -29,6 +30,7 @@ class CommonUser(models.Model):
       "username": self.username,
       "password": self.password,
       "truename": self.truename,
+      "nickname": self.nickname,
       "gender": self.gender,
       "birthday": self.birthday
     }

@@ -33,8 +33,10 @@ class Diary(View):
             title = req["title"]
             content = req["content"]
             tag = req["tag"]
+            tag2 = req["tag2"]
+            tag3 = req["tag3"]
             moodscore = req["moodscore"]
-            diary = diary_models.Diary(userid = user,title = title, content = content, tag = tag, moodscore = moodscore)
+            diary = diary_models.Diary(userid = user,title = title, content = content, tag = tag, tag2=tag2, tag3=tag3, moodscore = moodscore)
             diary.save()
             res = {
                 "result":"ok"
@@ -75,6 +77,8 @@ class Diary(View):
                 diary.title = req["title"]
                 diary.content = req["content"]
                 diary.tag  = req["tag"]
+                diary.tag2 = req["tag2"]
+                diary.tag3 = req["tag3"]
                 diary.moodscore = req["moodscore"]
                 diary.save()
             # diary = diary_models.Diary( title = title, content= content, tag = tag, moodscore = moodscore)
@@ -92,7 +96,6 @@ class Diary(View):
 
     # 取得日記 (單一或全部)
     @method_decorator(token_auth_required)
-    
     def get(self,request, *args, **kwargs):
         try:
             #user = kwargs["user"]

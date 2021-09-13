@@ -30,11 +30,12 @@ class User(View):
       username = req['username']
       password = req['password']
       truename = req['truename']
+      nickname = req['nickname']
       gender = req['gender']
       birthday = req['birthday']
 
       # 實作models.py當中的CommonUser將資料存入資料庫
-      user = CommonUser(username=username, password=password,truename = truename, gender = gender, birthday = birthday)
+      user = CommonUser(username=username, password=password,truename = truename, nickname = nickname, gender = gender, birthday = birthday)
       user.save()
 
       res = {
@@ -55,10 +56,12 @@ class User(View):
       req = json.loads(request.body)
       password = req['password']
       truename = req['truename']
+      nickname = req['nickname']
       gender = req['gender']
       birthday = req['birthday']
       user.password = password
       user.truename = truename
+      user.nickname = nickname
       user.gender = gender
       user.birthday = birthday
       user.save()
@@ -106,7 +109,7 @@ class User(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Token(View): 
-  # get_token   
+  # get_token  & 登入
   def post(self, request, *args, **kargs):  
     try:
       req = json.loads(request.body)    
@@ -166,6 +169,7 @@ class Token(View):
       return JsonResponse({"message": "failed", "error": str(e)}, status=500)   
 
 
+# change password
 @method_decorator(csrf_exempt, name='dispatch')
 class Password(View): 
   @method_decorator(token_auth_required)  
@@ -181,4 +185,6 @@ class Password(View):
     except Exception as e:
       traceback.print_exc()
       print("error", str(e))
-      return JsonResponse({"message": "failed", "error": str(e)}, status=500)   
+      return JsonResponse({"message": "failed", "error": str(e)}, status=500)  
+
+
