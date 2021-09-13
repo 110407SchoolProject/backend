@@ -1,6 +1,6 @@
 import logging
 import scrapy
-from moodspider.moodtalk.moodtalk.items import MoodtalkItem
+#from moodspider.moodtalk.moodtalk.items import MoodtalkItem
 from moodspider import models as moodtalk_models
 
 
@@ -21,11 +21,6 @@ class MoodSpider(scrapy.Spider):
             sentence = sentence_list[i].xpath(".//text()").get()
             moodtalk = moodtalk_models.Moodtalk(sentence = sentence)
             moodtalk.save()
-        #print(moodtalk)
-        print(sentence)
-        print("長度為{}".format(len(sentence_list)))
-            #item['sentence'] = sentence
-            #yield item
 
 
 

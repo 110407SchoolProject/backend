@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'commonauth',
     'diary',
+    'index',
+    'analysis',
+    'moodtree',
+    'moodspider'
 ]
 
 MIDDLEWARE = [
