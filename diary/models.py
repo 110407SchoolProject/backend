@@ -50,6 +50,11 @@ class Diary(models.Model):
         "create_date": self.create_date
         }
         return data
+    def to_json(self):
+        data = {
+            "content": self.content
+        }
+        return data
     
     def save(self,*args, **kwargs):
         super(Diary,self).save(*args,**kwargs)
