@@ -1,3 +1,4 @@
+from django.db.models.expressions import Value
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -15,104 +16,101 @@ from django.views import View
 import datetime
 from diary.models import *
 from diary.decorators import token_auth_required, permission_required, admin_only
-from diary import models as diary_models
+from diary.models import Diary as diary_models
 from django.db import transaction
+import matplotlib.pyplot as plt
+from collections import Counter
 
 
 logging = logging.getLogger(__name__)
 
 
 @method_decorator(csrf_exempt,name="dispatch")
-class Diary(View):
-    # 新增 diary
+class Analysis(View):
     @method_decorator(token_auth_required)
-    def post(self,request, *args, **kwargs):
-        try:
-            user = kwargs["user"]
-            req = json.loads(request.body)
-            title = req["title"]
-            content = req["content"]
-            tag = req["tag"]
-            moodscore = req["moodscore"]
-            diary = diary_models.Diary(userid = user,title = title, content = content, tag = tag, moodscore = moodscore)
-            diary.save()
-            res = {
-                "result":"ok"
-            }
-            return JsonResponse(res,status=200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error",str(e))
-            return JsonResponse({"message":"failed","error":str(e)}, status=500)
-    
-    # 刪除 diary
-    @method_decorator(token_auth_required)
-    def delete(self, request, *args, **kwargs):
-        try:
-            diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"], userid = kwargs["user"])
-            diary.delete()
-            res = {
-                "result":"ok"
-            }
-            return JsonResponse(res,status=200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error", str(e))
-            return JsonResponse({"message": "failed", "error": str(e)}, status=500)  
-
-    # 更新diary
-    @method_decorator(token_auth_required)
-    def put(self,request,*args,**kwargs):
-        try:
-            # diaryid = kwargs["diaryid"]
-            # print(kwargs)
-            # user = kwargs["user"]
-            # print(user)
-            diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"], userid = kwargs["user"])
-            # print(diary.moodscore)
-            with transaction.atomic():
-                req = json.loads(request.body)
-                diary.title = req["title"]
-                diary.content = req["content"]
-                diary.tag  = req["tag"]
-                diary.moodscore = req["moodscore"]
-                diary.save()
-            # diary = diary_models.Diary( title = title, content= content, tag = tag, moodscore = moodscore)
-            # diary.save()
-            res = {
-                "result": "ok"
-            }
-
-            return JsonResponse(res, status = 200)
-        except Exception as e:
-            traceback.print_exc()
-            print("error",str(e))
-            return JsonResponse({"message":"failed","error":str(e)}, status=500)
-
-
-    # 取得日記 (單一或全部)
-    @method_decorator(token_auth_required)
-    
+    # 取得moodscore分數做平均
     def get(self,request, *args, **kwargs):
         try:
-            #user = kwargs["user"]
-            # print(kwargs)
-            diary_list = []
-            if kwargs["diaryid"] == "":
-                diarys = diary_models.Diary.objects.filter(userid=kwargs["user"]).all()
-                for diary in diarys:
-                    diary_list.append(diary.all_to_json())
-                # 取list
-            else:
-                diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"],userid = kwargs["user"])
-                diary_list.append(diary.single_to_json())
+            moodscore_list = []
+            total = 0
+            req = json.loads(request.body)
+            days = req["days"]
+            moodscore = diary_models.objects.filter(userid = kwargs["user"]).order_by('-create_date').values('moodscore')[:days]
+            for i in range(len(moodscore)):
+                moodscore_list.append(moodscore[i].get('moodscore'))
+            
+            for score in moodscore_list:
+                total = total + score
+            scores = total / len(moodscore)
+
+            res = {
+                "result":"ok",
+                "score": scores
+            }
+
+            return JsonResponse(res,status=200)
+        except Exception as e:
+            traceback.print_exc()
+            print("error",str(e))
+            return JsonResponse({"message":"failed","error":str(e)}, status=500)
+    
+
+    @method_decorator(token_auth_required)
+    # 取得標籤
+    def post(self, request, *args, **kwargs):
+        try:
+            positive_tags_list = []
+            negative_tags_list = []
+            req = json.loads(request.body)
+            days = req["days"]
+            tags = diary_models.objects.filter(userid = kwargs["user"]).order_by('-create_date').values('moodscore','tag', 'tag2', 'tag3')[:days]
+            for i in range(len(tags)):
+                if tags[i].get('moodscore') >=3:
+                    positive_tags_list.append(tags[i].get('tag'))
+                    positive_tags_list.append(tags[i].get('tag2'))
+                    positive_tags_list.append(tags[i].get('tag3'))
+                else:
+                    negative_tags_list.append(tags[i].get('tag'))
+                    negative_tags_list.append(tags[i].get('tag2'))
+                    negative_tags_list.append(tags[i].get('tag3'))
+
+            positive = Counter(positive_tags_list)
+            positive_most = positive.most_common(2)
+            negative = Counter(negative_tags_list)
+            negative_most = negative.most_common(2)
 
             res = {
                 "result": "ok",
-                "diary_list": diary_list
+                "x_most": positive_most,
+                "y_most": negative_most
             }
+
             return JsonResponse(res, status = 200)
+
         except Exception as e:
             traceback.print_exc()
             print("error",str(e))
-            return JsonResponse({"message": "failed","error": str(e)}, status = 500 )
+            return JsonResponse({"message":"failed","error":str(e)}, status=500)
+
+@method_decorator(csrf_exempt,name="dispatch")
+class Chart(View):
+    @method_decorator(token_auth_required)
+    def get(self,request, *args, **kwargs):
+        try:
+            moodscore_list  = []
+            req = json.loads(request.body)
+            days = req['days']
+            moodscore = diary_models.objects.filter(userid = kwargs["user"]).order_by('-create_date').values('moodscore')[:days]
+            for i in range(len(moodscore)):
+                moodscore_list.append(moodscore[i].get('moodscore'))
+            print(moodscore_list)
+
+            res = {
+                "result":"ok"
+                #"moodscore": moodscore_list
+            }
+            return JsonResponse(res,status=200)
+        except Exception as e:
+            traceback.print_exc()
+            print("error",str(e))
+            return JsonResponse({"message":"failed","error":str(e)}, status=500)

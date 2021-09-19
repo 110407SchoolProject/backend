@@ -8,4 +8,5 @@ from analysis import views as analysis_views
 
 api_patterns = [
   re_path(r'analysis/days', analysis_views.Analysis.as_view()),
+  path(r'chart/days', analysis_views.Chart.as_view()),
 ]
