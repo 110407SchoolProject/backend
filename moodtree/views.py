@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import path
 from PIL import Image
-from matplotlib import colors
+from matplotlib import colors, image
 import os
 import shutil
 from pathlib import Path
@@ -100,10 +100,9 @@ class Moodtree(View):
                 my_wordcloud.to_file('/home/schoolproject/diary-app/backend/moodtree/wordcloud.png')
                 text_file.close()
                 shutil.move('/home/schoolproject/diary-app/backend/moodtree/wordcloud.png', '/home/schoolproject/diary-app/backend/media/wordcloud/wordcloud.png')
-        
-                
+                image_path = "/home/schoolproject/diary-app/backend/media/wordcloud/wordcloud.png"
                 res = {
-                    "result": "ok"
+                    "result": "{}".format(image_path)
                 }
             return JsonResponse(res, status=200)
             

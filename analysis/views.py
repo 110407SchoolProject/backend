@@ -152,8 +152,9 @@ class PieChart(View):
                 plt.show()
                 plt.savefig(my_path + '/piechart.png', transparent=True) #transparent=True
                 shutil.move('/home/schoolproject/diary-app/backend/analysis/piechart.png', '/home/schoolproject/diary-app/backend/media/analysis/piechart/piechart.png')
+                image_path = "/home/schoolproject/diary-app/backend/media/analysis/piechart/piechart.png"
                 res = {
-                    "result":"ok"
+                    "result":"{}".format(image_path)
                 }
             return JsonResponse(res,status=200)
         except Exception as e:
@@ -180,10 +181,11 @@ class LineChart(View):
                 moodscore_list.append(moodscore[i].get('moodscore'))
             for i in range(len(title)):
                 title_list.append(title[i].get('title'))
-            if (len(title_list) or len(moodscore_list) == 0):
+            if (len(title_list) == 0):
                 res = {
                     "result": "{}天內無日記".format(days)
                 }
+
             else:
                 #plt.subplot(1,3,3)
                 fontP = font_manager.FontProperties()
@@ -202,8 +204,9 @@ class LineChart(View):
                 plt.show()
                 plt.savefig(my_path + '/linechart.png') #transparent=True
                 shutil.move(my_path + '/linechart.png', '/home/schoolproject/diary-app/backend/media/analysis/linechart/linechart.png')
+                image_path = "/home/schoolproject/diary-app/backend/media/analysis/linechart/linechart.png"
                 res = {
-                    "result":"ok"
+                    "result":"{}".format(image_path)
                 }
             return JsonResponse(res,status=200)
         except Exception as e:
