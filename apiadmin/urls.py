@@ -17,17 +17,23 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from commonauth import urls as commonauth_urls
 from diary import urls as diary_urls
-import index
 from moodspider import urls as moodspider_urls
 from index import urls as index_urls
+from moodtree import urls as moodtree_urls
+from analysis import urls as analysis_urls
+from django.conf.urls.static import static
+from django.conf import settings
+
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
     re_path(r'^api/commonauth/', include(commonauth_urls.api_patterns)),
     re_path(r'^api/diary/',include(diary_urls.api_patterns)),
     re_path(r'^api/index/',include(index_urls.api_patterns)),
-    #re_path(r'^api/analysis/',include(diary_urls.api_patterns)),
-    #re_path(r'^api/moodtree/',include(diary_urls.api_patterns)),
+    re_path(r'^api/analysis/',include(analysis_urls.api_patterns)),
+    re_path(r'^api/moodtree/',include(moodtree_urls.api_patterns)),
     re_path(r'^api/moodspider/',include(moodspider_urls.api_patterns)),
-
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
