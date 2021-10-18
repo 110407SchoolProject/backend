@@ -18,6 +18,8 @@ import datetime
 
 from commonauth.models import *
 from commonauth.decorators import token_auth_required, permission_required, admin_only
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +35,15 @@ class User(View):
       nickname = req['nickname']
       gender = req['gender']
       birthday = req['birthday']
-
+      
       # 實作models.py當中的CommonUser將資料存入資料庫
-      user = CommonUser(username=username, password=password,truename = truename, nickname = nickname, gender = gender, birthday = birthday)
-      user.save()
-
+      try:
+        validate_email(username)
+      except ValidationError as e:
+        return JsonResponse({"message": "failed", "error": str(e)}, status=500)
+      else:
+        user = CommonUser(username=username, password=password,truename = truename, nickname = nickname, gender = gender, birthday = birthday)
+        user.save()
       res = {
         "result": "ok",
       }

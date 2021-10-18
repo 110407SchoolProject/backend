@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 import uuid
 
 
+
 class CommonUser(models.Model):
   userid = models.UUIDField(default=uuid.uuid4, unique=True,primary_key=True, editable=False,verbose_name="使用者ID")
   username = models.EmailField(max_length=128,unique=True,verbose_name="帳號(信箱)")
