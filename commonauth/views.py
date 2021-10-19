@@ -48,9 +48,11 @@ class User(View):
       # validate password
       str_password = str(password)
       if str_password.isdigit():
-            return JsonResponse({"message": "failed", "error": "至少包含一個英文字母或特殊字元"}, status=500)
+            return JsonResponse({"message": "failed", "error": "至少包含一個英文字母"}, status=500)
       elif len(str_password) < 8:
             return JsonResponse({"message": "failed", "error": "密碼長度不可小於8位"}, status=500)
+      elif re.search(r'\W', str_password):
+            return JsonResponse({"message": "failed", "error": "密碼不可包含特殊字元"}, status=500)
       else:
           # 實作models.py當中的CommonUser將資料存入資料庫
           user = CommonUser(username=username, password=password,truename = truename, nickname = nickname, gender = gender, birthday = birthday)
