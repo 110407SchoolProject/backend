@@ -21,6 +21,9 @@ from moodspider import urls as moodspider_urls
 from index import urls as index_urls
 from moodtree import urls as moodtree_urls
 from analysis import urls as analysis_urls
+from bert import urls as bert_urls
+from profileStatus import urls as profileStatus_urls
+from passwordError import urls as passwordError_urls
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -33,6 +36,9 @@ urlpatterns = [
     re_path(r'^api/analysis/',include(analysis_urls.api_patterns)),
     re_path(r'^api/moodtree/',include(moodtree_urls.api_patterns)),
     re_path(r'^api/moodspider/',include(moodspider_urls.api_patterns)),
+    re_path(r'^api/bert/',include(bert_urls.api_patterns)),
+    re_path(r'^api/status/',include(profileStatus_urls.api_patterns)),
+    re_path(r'^api/passworderror/',include(passwordError_urls.api_patterns))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

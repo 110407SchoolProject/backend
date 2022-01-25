@@ -4,8 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 class Moodtalk(models.Model):
     sentence = models.CharField(max_length=1024, verbose_name="心情小語")
-    create_date = models.DateField(auto_now_add=True)
-    last_modified = models.DateField(auto_now=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "心情小語"

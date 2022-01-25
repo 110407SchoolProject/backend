@@ -19,7 +19,8 @@ def token_auth_required(view_func):
         kwargs["user"] = user      
       else:
         kwargs["decoded_token"] = None
-        kwargs["user"] = None  
+        kwargs["user"] = None
+        return JsonResponse({"message":"no token"}, status = 500)
     
     except Exception as e:
       print(e)

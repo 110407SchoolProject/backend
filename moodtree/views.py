@@ -1,3 +1,4 @@
+from ntpath import join
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -42,20 +43,25 @@ logging = logging.getLogger(__name__)
 class Moodtree(View):
     # 畫MoodTree
     @method_decorator(token_auth_required)
-    def get(self,request, *args, **kwargs):
+    def post(self,request, *args, **kwargs):
         try:
             diary_list = []
             req = json.loads(request.body)
-            days = req["days"]
-            startdate = datetime.today()
-            enddate = startdate + timedelta(days=-days)
-            diarys = diary_models.objects.filter(userid = kwargs["user"], create_date__range=[enddate, startdate]).order_by('-create_date').values('content')
+            start = req['start']
+            end = req['end']
+            # 轉成datetime格式
+            datetime_start = datetime.strptime(start, "%Y-%m-%d")
+            datetime_end = datetime.strptime(end,"%Y-%m-%d") + timedelta(days=1)
+            # 轉回String
+            string_start = datetime.strftime(datetime_start, "%Y-%m-%d")
+            string_end = datetime.strftime(datetime_end,"%Y-%m-%d")
+            diarys = diary_models.objects.filter(userid = kwargs["user"], create_date__range=[string_start, string_end]).order_by('-create_date').values('content')
             for i in range(len(diarys)):
                 diary_list.append(diarys[i].get('content'))
             
             if(len(diary_list) == 0):
                 res = {
-                    "result" : "{}天內無日記".format(days)
+                    "result" : "{}到{}無日記".format(start, end)
                 }
             else:
                 path = '/home/schoolproject/diary-app/backend/moodtree/diary.txt'
@@ -81,7 +87,6 @@ class Moodtree(View):
 
                 # word變數在jieba.cut(text_list)中迭代，找出沒有在punctuation及stopwords中出現的字，且將這些字加入到新的set中
                 word_list = {word for word in jieba.cut(text_list) if word not in punctuation and word not in stopwords}
-                print(word_list)
                 data = dict()
                 for word in word_list:
                     if len(word) >=2:
@@ -100,9 +105,15 @@ class Moodtree(View):
                 my_wordcloud.to_file('/home/schoolproject/diary-app/backend/moodtree/wordcloud.png')
                 text_file.close()
                 shutil.move('/home/schoolproject/diary-app/backend/moodtree/wordcloud.png', '/home/schoolproject/diary-app/backend/media/wordcloud/wordcloud.png')
-                image_path = "/home/schoolproject/diary-app/backend/media/wordcloud/wordcloud.png"
+                image_url = "media/wordcloud/wordcloud.png"
+
+                # 取得心情樹上的文字
+                words_on_tree = "".join(list(word_list))
                 res = {
-                    "result": "{}".format(image_path)
+                    "result": "ok",
+                    "tree_image_url": "{}".format(image_url),
+                    "words": words_on_tree
+                    
                 }
             return JsonResponse(res, status=200)
             

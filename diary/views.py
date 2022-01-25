@@ -71,7 +71,6 @@ class Diary(View):
             # user = kwargs["user"]
             # print(user)
             diary = diary_models.Diary.objects.get(diaryid = kwargs["diaryid"], userid = kwargs["user"])
-            # print(diary.moodscore)
             with transaction.atomic():
                 req = json.loads(request.body)
                 diary.title = req["title"]
@@ -92,7 +91,6 @@ class Diary(View):
             traceback.print_exc()
             print("error",str(e))
             return JsonResponse({"message":"failed","error":str(e)}, status=500)
-
 
     # 取得日記 (單一或全部)
     @method_decorator(token_auth_required)

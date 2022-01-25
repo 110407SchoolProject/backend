@@ -7,6 +7,7 @@ api_patterns = [
   path('tokens', commonauth_views.Token.as_view()),
   path('users', commonauth_views.User.as_view()),
   path('passwords', commonauth_views.Password.as_view()),
+  
   # path('token', TokenObtainPairView.as_view()),
   # path('users', commonauth_views.as_view()),
   # path('logout', commonauth_views.logout),
