@@ -22,15 +22,4 @@ class MoodSpider(scrapy.Spider):
             moodtalk = moodtalk_models.Moodtalk(sentence = sentence)
             moodtalk.save()
 
-
-
-        
-    
-
-    
-
-    
-
 #if __name__ == '__main__':
-
-        

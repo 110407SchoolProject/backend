@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'index',
     'analysis',
     'moodtree',
-    'moodspider'
+    'moodspider',
+    'bert',
+    'profileStatus',
+    'passwordError'
 ]
 
 MIDDLEWARE = [
@@ -83,7 +86,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         #'NAME': os.path.join(BASE_DIR, 'db.mysql'),
-        'NAME': 'apiadmin',
+        'NAME': 'diary-app',
         'USER': 'root',
         'PASSWORD': 'schoolproject',
         'HOST': '192.168.1.62',
@@ -105,6 +108,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -131,6 +137,9 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+DATETIME_FORMAT = '%d-%m-%Y %H:%M:%S' 
+
 
 
 # Static files (CSS, JavaScript, Images)

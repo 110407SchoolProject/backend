@@ -1,11 +1,9 @@
-
 import jwt
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from commonauth.models import *
 from django.contrib.auth.models import User
 from diary.models import *
-
 def token_auth_required(view_func):
   def wrap(request, *args, **kwargs):
     try:

@@ -3,8 +3,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
 
-
-
 class CommonUser(models.Model):
   userid = models.UUIDField(default=uuid.uuid4, unique=True,primary_key=True, editable=False,verbose_name="使用者ID")
   username = models.EmailField(max_length=128,unique=True,verbose_name="帳號(信箱)")
@@ -14,8 +12,8 @@ class CommonUser(models.Model):
   birthday = models.DateField(max_length=128, default=None, blank=True, null=True, verbose_name="生日")
   gender = models.CharField(max_length=5, verbose_name="性別")
 
-  create_date = models.DateField(auto_now_add=True)
-  last_modified = models.DateField(auto_now=True)
+  create_date = models.DateTimeField(auto_now_add=True)
+  last_modified = models.DateTimeField(auto_now=True)
 
   class Meta:
     ordering = ["username"]
@@ -36,6 +34,14 @@ class CommonUser(models.Model):
       "birthday": self.birthday
     }
     return data
+  
+  def data_to_json(self):
+    data = {
+      "username":self.username,
+      "truename": self.truename,
+      "birthday": self.birthday
+    }
+    return data
 
   def save(self, *args, **kwargs):
     try:
@@ -48,7 +54,5 @@ class CommonUser(models.Model):
       super(CommonUser, self).save(*args, **kwargs)
     except:
       # run add new user
-      self.password = make_password(self.password)  
-      super(CommonUser, self).save(*args, **kwargs)          
-
-
+      self.password = make_password(self.password)
+      super(CommonUser, self).save(*args, **kwargs)

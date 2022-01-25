@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from commonauth.models import *
 from django.contrib.auth.models import User
-
 def token_auth_required(view_func):
   def wrap(request, *args, **kwargs):
     try:
@@ -38,17 +37,13 @@ def admin_only(view_func):
       decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
       # print(decoded_token)
       user = User.objects.get(username=decoded_token["username"])
-
       kwargs["decoded_token"] = decoded_token
       kwargs["user"] = user
-
       if user == None:
         raise Exception
     except Exception as e:
       print(e)
       return JsonResponse({"status_code": 401, "message": "Token Error"}, status=200)
-
-
     return view_func(request, *args, **kwargs)
   return wrap      
 
@@ -63,7 +58,6 @@ def permission_required(perms=[]):
         user = CommonUser.objects.get(username=decoded_token["username"])
         if user == None:
           raise Exception
-
         for perm in perms:
           for role in user.roles.all():
             if role.has_permission(perm):

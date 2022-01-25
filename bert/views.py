@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -9,6 +10,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.utils.decorators import method_decorator
 import json
 import logging
+#from backend.bert import create
 import jwt
 from django.conf import settings
 from django.views import View
@@ -18,6 +20,7 @@ from diary.decorators import token_auth_required, permission_required, admin_onl
 from diary.models import Diary as diary_models
 from django.db import transaction
 from datetime import datetime, timedelta
+import time
 import os
 import tensorflow as tf
 from tensorflow import keras
@@ -27,12 +30,16 @@ from transformers import TFBertModel,BertTokenizer
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
+#from bert.create import create
+from bert.create import CreateModel as bert_create_model
 
 logging = logging.getLogger(__name__)
+
 
 @method_decorator(csrf_exempt,name="dispatch")
 class Bert(View):
     # 日記選擇性預測
+    
     @method_decorator(token_auth_required)
     def post(self,request, *args, **kwargs):
         try:
@@ -42,28 +49,35 @@ class Bert(View):
             req = json.loads(request.body)
             content = req["content"]
             content_list = [content]
+            #start = time.time()
             bert_model = TFBertModel.from_pretrained("bert-base-chinese")
             bert_tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+           
             path = os.path.dirname(__file__)
-            # 製作 input
+            # # 製作 input
             max_length = len(content)
             input_ids = layers.Input(shape=(max_length,), dtype=tf.int64)
             token_type_ids = layers.Input(shape=(max_length,), dtype=tf.int64)
             attention_mask = layers.Input(shape=(max_length,), dtype=tf.int64)
             embedding = bert_model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
-
-            # BERT 模型後的輸出部分架構（可自行修改設計）
+            
+             # BERT 模型後的輸出部分架構（可自行修改設計)
             X = GlobalMaxPooling1D()(embedding)
             X = Dense(128, activation='relu')(X)
             X = Dropout(0.05)(X)
             output = Dense(1, activation='sigmoid', name='output')(X)
 
-            # 使用 tf.keras.Model() 建立模型
+            # # 使用 tf.keras.Model() 建立模型
             model = tf.keras.Model(
                 inputs=[input_ids, token_type_ids, attention_mask],
                 outputs=output
             )
+            #end = time.time()
+            #times = end-start
+            #print(times)
             # Restore the weights
+            #bert_model = bert_create_model()
+            #a = bert_model.create()
             model.load_weights(path + '/my_model.h5')
             #X_our = df_test[['content']]
             encoded_inputs_test_our = bert_tokenizer(content_list, padding=True, truncation=True, max_length=max_length, return_tensors="tf")
@@ -72,13 +86,11 @@ class Bert(View):
             y_train_pred_class = np.where(y_train_pred > 0.5, 1,0)
             for i in range(len(y_train_pred_class)):
                 score_list.append(y_train_pred_class.item(i)) # get int value
-        
             res = {
                 "result":"ok",
                 "score": score_list
             }
             return JsonResponse(res,status=200)
-
         except Exception as e:
             traceback.print_exc()
             print("error",str(e))
@@ -91,10 +103,11 @@ class Bert(View):
             content_list = []
             content_length_list = []
             score_list = []
+            ##req = json.loads(request.body)
             days = 2
             startdate = datetime.today()
             enddate = startdate + timedelta(days=-days)
-            contents = diary_models.objects.filter(userid = kwargs["user"], create_date__range=[enddate, startdate]).order_by('-create_date').values('content')
+            contents = diary_models.objects.filter(userid = kwargs["user"],create_date__range=[enddate, startdate]).order_by('-create_date').values('content')
             for content in contents:
                 content_length_list.append(len(content['content']))
                 content_list.append(content['content'])
@@ -144,3 +157,46 @@ class Bert(View):
             traceback.print_exc()
             print("error",str(e))
             return JsonResponse({"message": "failed","error": str(e)}, status = 500 )
+
+
+
+@method_decorator(csrf_exempt,name="dispatch")
+class Create(View):
+    @method_decorator(token_auth_required)
+    def get(self,request, *args, **kwargs):
+        try:
+#             #global created_model
+#             #created_model = created_model.create()
+#             #a = bert_create_model.create()
+#             #print(a)
+            bert_model = bert_create_model()
+            bert_model.create()
+
+#             #created_model.create()
+#             # global global_model
+#             # bert_model = TFBertModel.from_pretrained("bert-base-chinese")
+#             # bert_tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+#             # path = os.path.dirname(__file__)
+#             # 製作 input
+#             #max_length = max(content_length_list)
+#             # input_ids = layers.Input(shape=(512,), dtype=tf.int64)
+#             # token_type_ids = layers.Input(shape=(512,), dtype=tf.int64)
+#             # attention_mask = layers.Input(shape=(512,), dtype=tf.int64)
+#             # embedding = bert_model(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)[0]
+
+#             # # BERT 模型後的輸出部分架構（可自行修改設計)
+#             # X = GlobalMaxPooling1D()(embedding)
+#             # X = Dense(128, activation='relu')(X)
+#             # X = Dropout(0.05)(X)
+#             # output = Dense(1, activation='sigmoid', name='output')(X)
+#             # # 使用 tf.keras.Model() 建立模型
+#             # global_model = tf.keras.Model(
+#             #     inputs=[input_ids, token_type_ids, attention_mask],
+#             #     outputs=output
+#             # )
+#             # print(global_model)
+            return JsonResponse( {"message":"success"}, status = 200)
+        except Exception as e:
+            traceback.print_exc()
+            print("error",str(e))
+            return JsonResponse({"message": "failed","error": str(e)}, status = 500)

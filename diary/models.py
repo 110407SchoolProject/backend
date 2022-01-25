@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
@@ -14,8 +15,8 @@ class Diary(models.Model):
     tag3 = models.CharField(max_length=50,default=None, blank=True, null=True,verbose_name="標籤3")
     moodscore = models.IntegerField(verbose_name="心情分數")
 
-    create_date = models.DateField(auto_now_add=True)
-    last_modified = models.DateField(auto_now=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "日記"
@@ -34,7 +35,8 @@ class Diary(models.Model):
         "tag2": self.tag2,
         "tag3": self.tag3,
         "moodscore": self.moodscore,
-        "create_date": self.create_date
+        "create_date": self.create_date,
+        "last_modified": self.last_modified
         }
         return data
     
@@ -47,7 +49,8 @@ class Diary(models.Model):
         "tag2": self.tag2,
         "tag3": self.tag3,
         "moodscore": self.moodscore,
-        "create_date": self.create_date
+        "create_date": self.create_date,
+        "last_modified": self.last_modified
         }
         return data
     

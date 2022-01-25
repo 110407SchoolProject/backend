@@ -16,13 +16,10 @@ import datetime
 from moodspider.models import Moodtalk as moodtalk_models
 from diary.models import Diary as diray_models
 from diary.decorators import token_auth_required, permission_required, admin_only
-#from diary import models as diary_models
+from diary import models as diary_models
 from django.db import transaction
 import random
-
-
 logging = logging.getLogger(__name__)
-
 
 @method_decorator(csrf_exempt,name="dispatch")
 class MoodSentence(View):
@@ -34,6 +31,7 @@ class MoodSentence(View):
             for sentence in sentences:
                 sentences_list.append(sentence.to_json())
             num = random.randrange(0,100)
+
             res = {
                 "result": "ok",
                 "sentence": sentences_list[num]
@@ -44,7 +42,6 @@ class MoodSentence(View):
             print("error",str(e))
             return JsonResponse({"message": "failed","error": str(e)}, status = 500 )
     
-
 @method_decorator(csrf_exempt,name="dispatch")
 class LatestDiary(View):
     @method_decorator(token_auth_required)
